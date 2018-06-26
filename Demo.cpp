@@ -16,8 +16,11 @@ along with BGSLibrary.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
 #include <opencv2/opencv.hpp>
+using namespace cv;
 
 #include "package_bgs/bgslibrary.h"
+
+using namespace ibgs;
 
 int main(int argc, char **argv)
 {

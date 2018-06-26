@@ -41,6 +41,9 @@ along with BGSLibrary.  If not, see <http://www.gnu.org/licenses/>.
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/highgui/highgui_c.h>
 //C++
 #include <iostream>
 #include <vector>
@@ -131,16 +134,39 @@ private:
   Mat initialMsgRGB;
 
   //struct for modeling the background values for a single pixel
-  typedef struct {
+  typedef struct Bins {
+    void initialize(unsigned int numSamples) {
+      binValues = new Vec3b[numSamples];
+      binHeights = new uchar[numSamples];
+      isFg = new bool[numSamples];
+    }
+    ~Bins() {
+      if (binValues)  { delete[] binValues; }
+      if (binHeights) { delete[] binHeights; }
+      if (isFg)       { delete[] isFg; }
+    }
     Vec3b* binValues;
     uchar* binHeights;
     bool* isFg;
   } Bins;
-
   Bins* bgBins;
+
 public:
   //struct for modeling the background values for the entire frame
-  typedef struct {
+  typedef struct BgModel {
+    void initialize(unsigned int maxBgBins) {
+      values = new Vec3b[maxBgBins];
+      isValid = new bool[maxBgBins];
+      isValid[0] = false;
+      isFg = new bool[maxBgBins];
+      counter = new uchar[maxBgBins];
+    }
+    ~BgModel() {
+      if (values)  { delete[] values; }
+      if (isValid) { delete[] isValid; }
+      if (isFg)    { delete[] isFg; }
+      if (counter) { delete[] counter; }
+    }
     Vec3b* values;
     bool* isValid;
     bool* isFg;

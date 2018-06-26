@@ -53,6 +53,10 @@ BackgroundSubtractorIMBS::BackgroundSubtractorIMBS()
   tau_s = 60;
   tau_h = 40;
   minArea = 30.;
+  nframes = 0;
+  bgBins = NULL;
+  bgModel = NULL;
+  persistenceMap = NULL;
   persistencePeriod = samplingPeriod*numSamples / 3.;//ms
 
   initial_tick_count = (double)getTickCount();
@@ -94,6 +98,10 @@ BackgroundSubtractorIMBS::BackgroundSubtractorIMBS(
   this->tau_s = tau_s;
   this->tau_h = tau_h;
   this->minArea = minArea;
+  nframes = 0;
+  bgBins = NULL;
+  bgModel = NULL;
+  persistenceMap = NULL;
 
   if (fps == 0.)
     initial_tick_count = (double)getTickCount();
@@ -165,15 +173,8 @@ void BackgroundSubtractorIMBS::initialize(Size frameSize, int frameType)
 
   for (unsigned int p = 0; p < numPixels; ++p)
   {
-    bgBins[p].binValues = new Vec3b[numSamples];
-    bgBins[p].binHeights = new uchar[numSamples];
-    bgBins[p].isFg = new bool[numSamples];
-
-    bgModel[p].values = new Vec3b[maxBgBins];
-    bgModel[p].isValid = new bool[maxBgBins];
-    bgModel[p].isValid[0] = false;
-    bgModel[p].isFg = new bool[maxBgBins];
-    bgModel[p].counter = new uchar[maxBgBins];
+    bgBins[p].initialize(numSamples);
+    bgModel[p].initialize(maxBgBins);
   }
 }
 
@@ -183,6 +184,8 @@ void BackgroundSubtractorIMBS::apply(InputArray _frame, OutputArray _fgmask, dou
 
   CV_Assert(frame.depth() == CV_8U);
   CV_Assert(frame.channels() == 3);
+  CV_Assert(frame.size().width > 0);
+  CV_Assert(frame.size().height > 0);
 
   bool needToInitialize = nframes == 0 || frame.type() != frameType;
   if (needToInitialize) {
